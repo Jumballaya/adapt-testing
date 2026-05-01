@@ -1,0 +1,24 @@
+{
+  "name": "adapt-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/main.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jumballaya/adapt-testing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Jumballaya/adapt-testing/issues"
+  },
+  "homepage": "https://github.com/Jumballaya/adapt-testing#readme",
+  "devDependencies": {
+    "@types/node": "^25.6.0"
+  }
+}
