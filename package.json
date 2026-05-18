@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/main.ts"
+    "start": "node src/main.ts",
+    "test": "node --test src/**/*.test.ts"
   },
   "repository": {
     "type": "git",
