@@ -1,19 +1,25 @@
-import type { IncomingMessage, ServerResponse } from "http";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import {
+  decorateRequest,
+  decorateResponse,
+  type Request,
+  type Response,
+} from "../http/index.ts";
 
 export type NextFunction = (err?: unknown) => void;
 
 export type RouteHandler = (
-  req: RouterRequest,
-  res: ServerResponse,
+  req: Request,
+  res: Response,
   next: NextFunction,
-) => void | Promise<void>;
+) => void | Response | Promise<void | Response>;
 
 export type ErrorHandler = (
   err: unknown,
-  req: RouterRequest,
-  res: ServerResponse,
+  req: Request,
+  res: Response,
   next: NextFunction,
-) => void | Promise<void>;
+) => void | Response | Promise<void | Response>;
 
 export type Handler = RouteHandler | ErrorHandler;
 
@@ -26,13 +32,11 @@ export type HttpMethod =
   | "HEAD"
   | "OPTIONS";
 
-export interface RouterRequest extends IncomingMessage {
-  params: Record<string, string>;
-  query: Record<string, string>;
-  path: string;
-  baseUrl: string;
-  originalUrl: string;
-}
+/**
+ * @deprecated Use {@link Request} from "../http" instead.
+ * Kept as an alias for backwards compatibility.
+ */
+export type RouterRequest = Request;
 
 interface Layer {
   /** null method means "match any method" (middleware / mount). */
@@ -60,7 +64,7 @@ interface Layer {
  *
  * Usage:
  *   const router = new Router();
- *   router.get("/", (req, res) => res.end("hi"));
+ *   router.get("/", (req, res) => res.send("hi"));
  *   http.createServer(router.handle).listen(8080);
  */
 export class Router {
@@ -68,12 +72,14 @@ export class Router {
 
   /** Bound entry point: `http.createServer(router.handle)`. */
   public readonly handle = (req: IncomingMessage, res: ServerResponse): void => {
-    this.dispatch(req as RouterRequest, res, (err) => {
-      if (err) return this.defaultError(err, res);
-      if (!res.writableEnded) {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "text/plain; charset=utf-8");
-        res.end(`Cannot ${req.method} ${req.url}`);
+    const request = decorateRequest(req);
+    const response = decorateResponse(res);
+    this.dispatch(request, response, (err) => {
+      if (err) return this.defaultError(err, response);
+      if (!response.writableEnded) {
+        response.statusCode = 404;
+        response.setHeader("Content-Type", "text/plain; charset=utf-8");
+        response.end(`Cannot ${req.method} ${req.url}`);
       }
     });
   };
@@ -160,8 +166,8 @@ export class Router {
    * to the next error-handling middleware.
    */
   private dispatch(
-    req: RouterRequest,
-    res: ServerResponse,
+    req: Request,
+    res: Response,
     done: NextFunction,
     baseUrl = "",
   ): void {
@@ -213,7 +219,7 @@ export class Router {
     next();
   }
 
-  private defaultError(err: unknown, res: ServerResponse): void {
+  private defaultError(err: unknown, res: Response): void {
     if (res.writableEnded) return;
     res.statusCode = 500;
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
@@ -224,7 +230,7 @@ export class Router {
 
 // ---------- helpers ----------
 
-function ensureRequestFields(req: RouterRequest, baseUrl: string): void {
+function ensureRequestFields(req: Request, baseUrl: string): void {
   if (!req.params) req.params = {};
   if (!req.originalUrl) req.originalUrl = req.url ?? "/";
   if (req.baseUrl === undefined) req.baseUrl = baseUrl;

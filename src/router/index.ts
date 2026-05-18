@@ -1,9 +1,9 @@
 export { Router } from "./Router.ts";
 export type {
+  HttpMethod,
   Handler,
   RouteHandler,
   ErrorHandler,
   NextFunction,
   RouterRequest,
-  HttpMethod,
 } from "./Router.ts";
