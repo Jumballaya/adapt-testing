@@ -1,5 +1,6 @@
 import http, { IncomingMessage, ServerResponse } from "http";
 import { Router } from "./router/index.ts";
+import { logger, jsonBody, cors } from "./middleware/index.ts";
 
 function createServer(
   port: number,
@@ -17,24 +18,25 @@ function createServer(
 async function main() {
   const router = new Router();
 
-  // Request logger middleware
-  router.use((req, _res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    next();
-  });
+  router.use(logger());
+  router.use(cors());
+  router.use(jsonBody());
 
   router.get("/", (_req, res) => {
     res.writeHead(200, { "Content-Type": "text/html" });
     res.end("<html><body><h1>Hello World</h1></body></html>");
   });
 
-  // Path params + query string
   router.get("/users/:id", (req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ id: req.params.id, query: req.query }));
   });
 
-  // Sub-router mounted under /api
+  router.post("/echo", (req, res) => {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ youSent: (req as { body?: unknown }).body }));
+  });
+
   const api = new Router();
   api.get("/health", (_req, res) => {
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -42,7 +44,6 @@ async function main() {
   });
   router.use("/api", api);
 
-  // Error handler (4-arg middleware)
   router.use((err, _req, res, _next) => {
     res.statusCode = 500;
     res.setHeader("Content-Type", "application/json");
