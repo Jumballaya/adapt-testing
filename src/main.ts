@@ -1,5 +1,6 @@
 import { App } from "./app/index.ts";
-import { Router } from "./router/index.ts";
+import type { Request, Response } from "./http/index.ts";
+import { Router, type NextFunction } from "./router/index.ts";
 
 async function main() {
   const app = new App();
@@ -26,8 +27,10 @@ async function main() {
   });
   app.use("/api", api);
 
-  // Error handler (4-arg middleware)
-  app.use((err, _req, res, _next) => {
+  // Error handler (4-arg middleware). TypeScript can't infer parameter
+  // types from the overloaded use() signature when the function has 4
+  // parameters, so we annotate them explicitly here.
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     res.status(500).json({ error: (err as Error).message ?? String(err) });
   });
 

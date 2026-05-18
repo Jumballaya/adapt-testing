@@ -86,7 +86,8 @@ export class Router {
 
   // ---- Registration ----
 
-  use(handler: Handler): this;
+  use(handler: RouteHandler): this;
+  use(handler: ErrorHandler): this;
   use(path: string, ...handlers: Array<Handler | Router>): this;
   use(
     pathOrHandler: string | Handler,

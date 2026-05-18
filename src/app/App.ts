@@ -1,7 +1,7 @@
 import http, { type IncomingMessage, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { Router } from "../router/Router.ts";
-import type { Handler, RouteHandler } from "../router/Router.ts";
+import type { Handler, RouteHandler, ErrorHandler } from "../router/Router.ts";
 
 export type ListenCallback = (info: { port: number; address: string }) => void;
 
@@ -28,7 +28,8 @@ export class App {
 
   // ---- Middleware / mounting ----
 
-  use(handler: Handler): this;
+  use(handler: RouteHandler): this;
+  use(handler: ErrorHandler): this;
   use(path: string, ...handlers: Array<Handler | Router | App>): this;
   use(
     pathOrHandler: string | Handler,
