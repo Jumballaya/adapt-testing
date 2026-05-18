@@ -19,8 +19,10 @@ export interface Request extends IncomingMessage {
   originalUrl: string;
 
   /** Return a request header value (case-insensitive). Alias of header(). */
+  get(name: "set-cookie"): string[] | undefined;
   get(name: string): string | undefined;
   /** Return a request header value (case-insensitive). */
+  header(name: "set-cookie"): string[] | undefined;
   header(name: string): string | undefined;
 }
 
@@ -39,8 +41,13 @@ export interface Response extends ServerResponse {
   /** Send a JSON response. Sets Content-Type if not already set. */
   json(body: unknown): this;
   /**
-   * Send a response body. Strings/Buffers/streams are sent as-is;
-   * any other value is JSON-stringified.
+   * Send a response body. The Content-Type is inferred when not already set:
+   *   - string            -> text/html
+   *   - Buffer/Uint8Array -> application/octet-stream
+   *   - number/boolean    -> text/plain
+   *   - anything else     -> application/json (serialized via JSON.stringify)
+   *   - undefined/null    -> no body
+   * Streams are not supported; use res.write/res.end or pipe to res directly.
    */
   send(body?: unknown): this;
 

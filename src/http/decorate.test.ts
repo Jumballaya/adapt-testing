@@ -137,3 +137,57 @@ test("req.get()/header() return request headers case-insensitively", async () =>
     });
   });
 });
+
+test("req.get('set-cookie') returns the raw header array", async () => {
+  // Most HTTP clients refuse to send Set-Cookie as a request header, so we
+  // hand-craft the request via a raw TCP socket.
+  const app = new App();
+  app.get("/", (req, res) => {
+    const cookies = req.get("set-cookie");
+    res.json({ cookies: cookies ?? null, isArray: Array.isArray(cookies) });
+  });
+  await withApp(app, async (base) => {
+    const url = new URL(base);
+    const { default: net } = await import("node:net");
+    const body: string = await new Promise((resolve, reject) => {
+      const sock = net.createConnection(Number(url.port), url.hostname, () => {
+        sock.write(
+          "GET / HTTP/1.1\r\n" +
+            `Host: ${url.host}\r\n` +
+            "Set-Cookie: a=1\r\n" +
+            "Set-Cookie: b=2\r\n" +
+            "Connection: close\r\n\r\n",
+        );
+      });
+      const chunks: Buffer[] = [];
+      sock.on("data", (c) => chunks.push(c));
+      sock.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+      sock.on("error", reject);
+    });
+    const json = JSON.parse(body.slice(body.indexOf("\r\n\r\n") + 4));
+    assert.equal(json.isArray, true);
+    assert.deepEqual(json.cookies, ["a=1", "b=2"]);
+  });
+});
+
+test("res.send() handles a raw Uint8Array as binary", async () => {
+  const app = new App();
+  app.get("/", (_req, res) => res.send(new Uint8Array([104, 105])));
+  await withApp(app, async (base) => {
+    const res = await fetch(base + "/");
+    assert.match(res.headers.get("content-type") ?? "", /application\/octet-stream/);
+    assert.equal(await res.text(), "hi");
+  });
+});
+
+test("decorateRequest initializes routing fields on first decoration", async () => {
+  const { decorateRequest } = await import("./decorate.ts");
+  const raw = { headers: {}, url: "/foo?bar=1" } as unknown as Parameters<typeof decorateRequest>[0];
+  const req = decorateRequest(raw);
+  assert.deepEqual(req.params, {});
+  assert.deepEqual(req.query, {});
+  assert.equal(req.baseUrl, "");
+  assert.equal(req.originalUrl, "/foo?bar=1");
+  assert.equal(typeof req.get, "function");
+  assert.equal(typeof req.header, "function");
+});

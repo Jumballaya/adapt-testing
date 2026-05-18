@@ -18,19 +18,36 @@ const MIME_SHORTHANDS: Record<string, string> = {
 /**
  * Augment a raw IncomingMessage with the Request helpers.
  * Idempotent: safe to call multiple times on the same object.
+ *
+ * Initializes routing fields (params, query, path, baseUrl, originalUrl)
+ * to safe defaults so the Request contract holds immediately after
+ * decoration. Router.dispatch will populate them with real values during
+ * routing.
  */
 export function decorateRequest(raw: IncomingMessage): Request {
   const req = raw as Request;
   if (typeof req.header === "function") return req;
 
-  const getHeader = function (this: Request, name: string): string | undefined {
-    const value = this.headers[name.toLowerCase()];
-    if (Array.isArray(value)) return value.join(", ");
-    return value;
-  };
+  if (!req.params) req.params = {};
+  if (!req.query) req.query = {};
+  if (req.path === undefined) req.path = "";
+  if (req.baseUrl === undefined) req.baseUrl = "";
+  if (req.originalUrl === undefined) req.originalUrl = req.url ?? "/";
 
-  req.header = getHeader;
-  req.get = getHeader;
+  function getHeader(this: Request, name: string): string | string[] | undefined {
+    const value = this.headers[name.toLowerCase()];
+    if (value === undefined) return undefined;
+    // set-cookie is the only header that's semantically an array on requests;
+    // preserve the array form so callers don't lose cookie boundaries.
+    if (Array.isArray(value)) {
+      if (name.toLowerCase() === "set-cookie") return value;
+      return value.join(", ");
+    }
+    return value;
+  }
+
+  req.header = getHeader as Request["header"];
+  req.get = getHeader as Request["get"];
   return req;
 }
 
@@ -90,11 +107,11 @@ export function decorateResponse(raw: ServerResponse): Response {
       this.end(body);
       return this;
     }
-    if (Buffer.isBuffer(body)) {
+    if (Buffer.isBuffer(body) || body instanceof Uint8Array) {
       if (!this.getHeader("Content-Type")) {
         this.setHeader("Content-Type", "application/octet-stream");
       }
-      this.end(body);
+      this.end(Buffer.isBuffer(body) ? body : Buffer.from(body));
       return this;
     }
     if (typeof body === "number" || typeof body === "boolean") {
