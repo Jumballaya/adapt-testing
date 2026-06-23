@@ -1,24 +1,20 @@
 {
   "name": "adapt-testing",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node src/main.ts"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Jumballaya/adapt-testing.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "version": "0.1.0",
+  "private": true,
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/Jumballaya/adapt-testing/issues"
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,magenta \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm run dev --workspace apps/server",
+    "dev:web": "npm run dev --workspace apps/web",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
   },
-  "homepage": "https://github.com/Jumballaya/adapt-testing#readme",
   "devDependencies": {
-    "@types/node": "^25.6.0"
+    "concurrently": "^9.1.0",
+    "typescript": "^5.6.3"
   }
 }
