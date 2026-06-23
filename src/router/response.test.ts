@@ -1,0 +1,134 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import http from "node:http";
+import type { AddressInfo } from "node:net";
+import { Router } from "./Router.ts";
+
+async function withServer<T>(
+  router: Router,
+  fn: (base: string) => Promise<T>,
+): Promise<T> {
+  const server = http.createServer(router.handle);
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+  const { port } = server.address() as AddressInfo;
+  try {
+    return await fn(`http://127.0.0.1:${port}`);
+  } finally {
+    await new Promise<void>((resolve, reject) =>
+      server.close((e) => (e ? reject(e) : resolve())),
+    );
+  }
+}
+
+test("res.status().json() sets the code, content-type, and body", async () => {
+  const router = new Router();
+  router.post("/users", (_req, res) => res.status(201).json({ id: 7 }));
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/users", { method: "POST" });
+    assert.equal(res.status, 201);
+    assert.match(res.headers.get("content-type") ?? "", /application\/json/);
+    assert.deepEqual(await res.json(), { id: 7 });
+  });
+});
+
+test("res.send() infers JSON for objects", async () => {
+  const router = new Router();
+  router.get("/obj", (_req, res) => res.send({ ok: true }));
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/obj");
+    assert.match(res.headers.get("content-type") ?? "", /application\/json/);
+    assert.deepEqual(await res.json(), { ok: true });
+  });
+});
+
+test("res.send() infers HTML for strings", async () => {
+  const router = new Router();
+  router.get("/html", (_req, res) => res.send("<b>hi</b>"));
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/html");
+    assert.match(res.headers.get("content-type") ?? "", /text\/html/);
+    assert.equal(await res.text(), "<b>hi</b>");
+  });
+});
+
+test("res.send() with a Buffer defaults to octet-stream", async () => {
+  const router = new Router();
+  router.get("/buf", (_req, res) => res.send(Buffer.from("raw")));
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/buf");
+    assert.match(
+      res.headers.get("content-type") ?? "",
+      /application\/octet-stream/,
+    );
+    assert.equal(await res.text(), "raw");
+  });
+});
+
+test("res.type() adds a charset to bare types and respects full ones", async () => {
+  const router = new Router();
+  router.get("/csv", (_req, res) => res.type("text/csv").send("a,b"));
+  router.get("/custom", (_req, res) =>
+    res.type("text/plain; charset=latin1").send("x"),
+  );
+  await withServer(router, async (base) => {
+    const csv = await fetch(base + "/csv");
+    assert.equal(csv.headers.get("content-type"), "text/csv; charset=utf-8");
+    const custom = await fetch(base + "/custom");
+    assert.equal(custom.headers.get("content-type"), "text/plain; charset=latin1");
+  });
+});
+
+test("explicit content-type is not overwritten by json()", async () => {
+  const router = new Router();
+  router.get("/jsonld", (_req, res) =>
+    res.type("application/ld+json").json({ "@id": "1" }),
+  );
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/jsonld");
+    assert.equal(res.headers.get("content-type"), "application/ld+json; charset=utf-8");
+    assert.deepEqual(await res.json(), { "@id": "1" });
+  });
+});
+
+test("res.redirect() defaults to 302 with a Location header", async () => {
+  const router = new Router();
+  router.get("/old", (_req, res) => res.redirect("/new"));
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/old", { redirect: "manual" });
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.get("location"), "/new");
+  });
+});
+
+test("res.redirect() accepts an explicit status", async () => {
+  const router = new Router();
+  router.get("/perm", (_req, res) => res.redirect(301, "/here"));
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/perm", { redirect: "manual" });
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.get("location"), "/here");
+  });
+});
+
+test("res.set() chains arbitrary headers", async () => {
+  const router = new Router();
+  router.get("/h", (_req, res) =>
+    res.set("X-Custom", "yes").status(204).send(null),
+  );
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/h");
+    assert.equal(res.status, 204);
+    assert.equal(res.headers.get("x-custom"), "yes");
+  });
+});
+
+test("helpers are available inside mounted sub-routers", async () => {
+  const api = new Router();
+  api.get("/ping", (_req, res) => res.json({ pong: true }));
+  const router = new Router();
+  router.use("/api", api);
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/api/ping");
+    assert.deepEqual(await res.json(), { pong: true });
+  });
+});
