@@ -39,6 +39,8 @@ export interface RouterRequest extends IncomingMessage {
   body?: unknown;
   /** Parsed request cookies, populated by cookieParser() (see cookies.ts). */
   cookies?: Record<string, string>;
+  /** Authenticated username, populated by basicAuth() (see auth.ts). */
+  user?: string;
 }
 
 interface Layer {
