@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
+import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { AddressInfo } from "node:net";
 import { Router } from "./Router.ts";
 
@@ -130,5 +133,80 @@ test("helpers are available inside mounted sub-routers", async () => {
   await withServer(router, async (base) => {
     const res = await fetch(base + "/api/ping");
     assert.deepEqual(await res.json(), { pong: true });
+  });
+});
+
+/** Run `fn` with a throwaway directory that is removed afterward. */
+async function withTempDir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
+  const dir = await mkdtemp(join(tmpdir(), "adapt-sendfile-"));
+  try {
+    return await fn(dir);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
+test("res.sendFile streams a file with an inferred Content-Type", async () => {
+  await withTempDir(async (dir) => {
+    const file = join(dir, "page.html");
+    await writeFile(file, "<h1>hi</h1>");
+    const router = new Router();
+    router.get("/", (_req, res) => res.sendFile(file));
+    await withServer(router, async (base) => {
+      const res = await fetch(base + "/");
+      assert.equal(res.status, 200);
+      assert.match(res.headers.get("content-type") ?? "", /text\/html/);
+      assert.equal(res.headers.get("content-length"), "11");
+      assert.equal(await res.text(), "<h1>hi</h1>");
+    });
+  });
+});
+
+test("res.sendFile uses octet-stream for unknown extensions", async () => {
+  await withTempDir(async (dir) => {
+    const file = join(dir, "data.bin");
+    await writeFile(file, "raw");
+    const router = new Router();
+    router.get("/", (_req, res) => res.sendFile(file));
+    await withServer(router, async (base) => {
+      const res = await fetch(base + "/");
+      assert.match(
+        res.headers.get("content-type") ?? "",
+        /application\/octet-stream/,
+      );
+    });
+  });
+});
+
+test("res.sendFile 404s a missing path without throwing", async () => {
+  const router = new Router();
+  router.get("/", (_req, res) => res.sendFile("/no/such/file.txt"));
+  await withServer(router, async (base) => {
+    const res = await fetch(base + "/");
+    assert.equal(res.status, 404);
+  });
+});
+
+test("res.sendFile 404s a directory rather than streaming it", async () => {
+  await withTempDir(async (dir) => {
+    const router = new Router();
+    router.get("/", (_req, res) => res.sendFile(dir));
+    await withServer(router, async (base) => {
+      const res = await fetch(base + "/");
+      assert.equal(res.status, 404);
+    });
+  });
+});
+
+test("res.sendFile respects a Content-Type set by the handler", async () => {
+  await withTempDir(async (dir) => {
+    const file = join(dir, "weird.bin");
+    await writeFile(file, "x");
+    const router = new Router();
+    router.get("/", (_req, res) => res.type("text/markdown").sendFile(file));
+    await withServer(router, async (base) => {
+      const res = await fetch(base + "/");
+      assert.match(res.headers.get("content-type") ?? "", /text\/markdown/);
+    });
   });
 });

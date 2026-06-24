@@ -37,6 +37,8 @@ export interface RouterRequest extends IncomingMessage {
   originalUrl: string;
   /** Parsed request body, populated by body-parser middleware (see body.ts). */
   body?: unknown;
+  /** Parsed request cookies, populated by cookieParser() (see cookies.ts). */
+  cookies?: Record<string, string>;
 }
 
 interface Layer {
