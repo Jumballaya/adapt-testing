@@ -1,5 +1,5 @@
 import { App } from "./app/index.ts";
-import { Router } from "./router/index.ts";
+import { Router, json, BodyParseError } from "./router/index.ts";
 
 async function main() {
   const app = new App();
@@ -8,6 +8,14 @@ async function main() {
   app.use((req, _res, next) => {
     console.log(`${req.method} ${req.url}`);
     next();
+  });
+
+  // Parse JSON request bodies into req.body
+  app.use(json());
+
+  // Echo the parsed JSON body back to the client
+  app.post("/echo", (req, res) => {
+    res.json({ received: req.body });
   });
 
   app.get("/", (_req, res) => {
@@ -28,7 +36,8 @@ async function main() {
 
   // Error handler (4-arg middleware)
   app.use((err, _req, res, _next) => {
-    res.status(500).json({ error: (err as Error).message ?? String(err) });
+    const status = err instanceof BodyParseError ? err.status : 500;
+    res.status(status).json({ error: (err as Error).message ?? String(err) });
   });
 
   app.listen(8080, ({ port }) => {
