@@ -19,6 +19,9 @@ async function withServer<T>(
   try {
     return await fn(`http://127.0.0.1:${port}`);
   } finally {
+    // Drop idle keep-alive sockets so close() resolves promptly instead of
+    // waiting out the keep-alive timeout.
+    server.closeAllConnections();
     await new Promise<void>((resolve, reject) =>
       server.close((e) => (e ? reject(e) : resolve())),
     );
@@ -72,6 +75,17 @@ test("serializeCookie renders all supported attributes", () => {
 
 test("serializeCookie rejects invalid cookie names", () => {
   assert.throws(() => serializeCookie("bad name", "v"), /Invalid cookie name/);
+});
+
+test("serializeCookie rejects path/domain with control chars (header injection)", () => {
+  assert.throws(
+    () => serializeCookie("sid", "v", { path: "/\r\nSet-Cookie: evil=1" }),
+    /Invalid cookie path/,
+  );
+  assert.throws(
+    () => serializeCookie("sid", "v", { domain: "evil\nfoo.com" }),
+    /Invalid cookie domain/,
+  );
 });
 
 // ---- middleware + response helpers ----

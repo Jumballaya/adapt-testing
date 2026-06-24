@@ -143,7 +143,22 @@ export function enhanceResponse(res: ServerResponse): RouterResponse {
     this.setHeader("Content-Length", String(info.size));
     await new Promise<void>((resolve, reject) => {
       const stream = createReadStream(path);
-      stream.on("error", reject);
+      // Always release the file descriptor, including when the client
+      // disconnects mid-transfer (response "close" before "finish").
+      const cleanup = () => stream.destroy();
+      this.on("close", cleanup);
+      stream.on("error", (err) => {
+        // Once headers/Content-Length are sent we can't switch to a 500, so
+        // abort the socket instead of letting the rejection bubble to the
+        // router's error handler (which would throw ERR_HTTP_HEADERS_SENT).
+        if (this.headersSent) {
+          this.destroy(err);
+          resolve();
+        } else {
+          reject(err);
+        }
+      });
+      this.on("error", reject);
       this.on("finish", resolve);
       stream.pipe(this);
     });

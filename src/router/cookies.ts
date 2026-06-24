@@ -53,6 +53,14 @@ export function serializeCookie(
   if (!FIELD_NAME.test(name)) {
     throw new TypeError(`Invalid cookie name: ${name}`);
   }
+  // Path/Domain are interpolated raw, so reject control chars (CR/LF/NUL/etc.)
+  // to prevent Set-Cookie header injection from untrusted input.
+  if (options.path !== undefined && CTRL_CHARS.test(options.path)) {
+    throw new TypeError(`Invalid cookie path: ${options.path}`);
+  }
+  if (options.domain !== undefined && CTRL_CHARS.test(options.domain)) {
+    throw new TypeError(`Invalid cookie domain: ${options.domain}`);
+  }
   let str = `${name}=${encodeURIComponent(value)}`;
   // Default Path to "/" so a cookie is returned for the whole origin, matching
   // Express; callers can still pass an explicit narrower path.
@@ -86,6 +94,9 @@ export function cookieParser(): RouteHandler {
 
 // RFC 6265 cookie-name token: visible ASCII minus separators/control chars.
 const FIELD_NAME = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
+
+// Control chars and separators that would let a value break out of the header.
+const CTRL_CHARS = /[\x00-\x1f\x7f;]/;
 
 function decodeCookieValue(raw: string): string {
   // Strip surrounding quotes some servers add, then percent-decode.

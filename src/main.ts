@@ -21,7 +21,8 @@ async function main() {
 
   // Track visits with a cookie
   app.get("/visits", (req, res) => {
-    const count = Number(req.cookies?.visits ?? 0) + 1;
+    const previous = Number(req.cookies?.visits);
+    const count = (Number.isFinite(previous) ? previous : 0) + 1;
     res.cookie("visits", String(count), { httpOnly: true, sameSite: "lax" });
     res.json({ visits: count });
   });

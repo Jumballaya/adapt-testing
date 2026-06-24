@@ -17,6 +17,9 @@ async function withServer<T>(
   try {
     return await fn(`http://127.0.0.1:${port}`);
   } finally {
+    // Drop idle keep-alive sockets so close() resolves promptly instead of
+    // waiting out the keep-alive timeout.
+    server.closeAllConnections();
     await new Promise<void>((resolve, reject) =>
       server.close((e) => (e ? reject(e) : resolve())),
     );
@@ -208,5 +211,23 @@ test("res.sendFile respects a Content-Type set by the handler", async () => {
       const res = await fetch(base + "/");
       assert.match(res.headers.get("content-type") ?? "", /text\/markdown/);
     });
+  });
+});
+
+test("a handler that rejects after headers are sent does not crash the server", async () => {
+  const router = new Router();
+  router.get("/boom", async (_req, res) => {
+    res.setHeader("Content-Length", "100");
+    res.write("partial"); // flush headers, like a stream that started then failed
+    throw new Error("read failed mid-stream");
+  });
+  router.get("/ok", (_req, res) => res.send("ok"));
+  await withServer(router, async (base) => {
+    // The failing request aborts; fetch sees a truncated/failed body.
+    await fetch(base + "/boom").then((r) => r.text()).catch(() => {});
+    // Crucially, the server is still alive and serving requests.
+    const res = await fetch(base + "/ok");
+    assert.equal(res.status, 200);
+    assert.equal(await res.text(), "ok");
   });
 });
