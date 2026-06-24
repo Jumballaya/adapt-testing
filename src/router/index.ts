@@ -5,5 +5,6 @@ export type {
   ErrorHandler,
   NextFunction,
   RouterRequest,
+  RouterResponse,
   HttpMethod,
 } from "./Router.ts";

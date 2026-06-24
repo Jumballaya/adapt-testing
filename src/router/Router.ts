@@ -1,17 +1,20 @@
 import type { IncomingMessage, ServerResponse } from "http";
+import { enhanceResponse, type RouterResponse } from "./response.ts";
+
+export type { RouterResponse } from "./response.ts";
 
 export type NextFunction = (err?: unknown) => void;
 
 export type RouteHandler = (
   req: RouterRequest,
-  res: ServerResponse,
+  res: RouterResponse,
   next: NextFunction,
 ) => void | Promise<void>;
 
 export type ErrorHandler = (
   err: unknown,
   req: RouterRequest,
-  res: ServerResponse,
+  res: RouterResponse,
   next: NextFunction,
 ) => void | Promise<void>;
 
@@ -67,7 +70,8 @@ export class Router {
   private layers: Layer[] = [];
 
   /** Bound entry point: `http.createServer(router.handle)`. */
-  public readonly handle = (req: IncomingMessage, res: ServerResponse): void => {
+  public readonly handle = (req: IncomingMessage, rawRes: ServerResponse): void => {
+    const res = enhanceResponse(rawRes);
     this.dispatch(req as RouterRequest, res, (err) => {
       if (err) return this.defaultError(err, res);
       if (!res.writableEnded) {
@@ -161,7 +165,7 @@ export class Router {
    */
   private dispatch(
     req: RouterRequest,
-    res: ServerResponse,
+    res: RouterResponse,
     done: NextFunction,
     baseUrl = "",
   ): void {
@@ -213,7 +217,7 @@ export class Router {
     next();
   }
 
-  private defaultError(err: unknown, res: ServerResponse): void {
+  private defaultError(err: unknown, res: RouterResponse): void {
     if (res.writableEnded) return;
     res.statusCode = 500;
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
