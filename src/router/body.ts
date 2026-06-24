@@ -14,14 +14,21 @@ import type { RouteHandler } from "./Router.ts";
  * untouched (req.body stays undefined), so several parsers can be stacked.
  * Malformed bodies and bodies over the size limit are forwarded to the error
  * chain via next(err) rather than throwing.
+ *
+ * Empty bodies are treated consistently across parsers: req.body is left
+ * undefined rather than being set to "" or {}.
+ *
+ * Note on multiple values: urlencoded() keeps a single value per field; if a
+ * field appears more than once (e.g. "a=1&a=2"), the last value wins.
  */
 export interface BodyOptions {
   /** Maximum body size in bytes. Defaults to 1 MiB. */
   limit?: number;
   /**
    * Restrict parsing to a Content-Type. Defaults to the parser's natural type
-   * (e.g. "application/json"). Matched as a case-insensitive prefix, so
-   * "application/json" also matches "application/json; charset=utf-8".
+   * (e.g. "application/json"). Matched against the media type only (the part
+   * before any ";"), case-insensitively, so "application/json" also matches
+   * "application/json; charset=utf-8" but not "application/json-patch+json".
    */
   type?: string;
 }
@@ -37,13 +44,16 @@ export function json(options: BodyOptions = {}): RouteHandler {
 
 export function text(options: BodyOptions = {}): RouteHandler {
   const type = options.type ?? "text/plain";
-  return makeParser(type, options.limit, (raw) => raw);
+  return makeParser(type, options.limit, (raw) =>
+    raw.length === 0 ? undefined : raw,
+  );
 }
 
 export function urlencoded(options: BodyOptions = {}): RouteHandler {
   const type = options.type ?? "application/x-www-form-urlencoded";
   return makeParser(type, options.limit, (raw) => {
-    const out: Record<string, string> = {};
+    if (raw.length === 0) return undefined;
+    const out: Record<string, string> = Object.create(null);
     for (const [k, v] of new URLSearchParams(raw)) out[k] = v;
     return out;
   });
@@ -59,12 +69,15 @@ function makeParser(
     if (!hasBody(req) || !contentTypeMatches(req, wanted)) return next();
     readBody(req, limit).then(
       (raw) => {
+        let parsed: unknown;
         try {
-          req.body = parse(raw);
-          next();
+          parsed = parse(raw);
         } catch {
           next(new BodyParseError("Invalid request body", 400));
+          return;
         }
+        req.body = parsed;
+        next();
       },
       (err) => next(err),
     );
@@ -89,7 +102,9 @@ function hasBody(req: IncomingMessage): boolean {
 
 function contentTypeMatches(req: IncomingMessage, wanted: string): boolean {
   const header = req.headers["content-type"];
-  return typeof header === "string" && header.toLowerCase().startsWith(wanted);
+  if (typeof header !== "string") return false;
+  const mediaType = header.split(";", 1)[0].trim().toLowerCase();
+  return mediaType === wanted;
 }
 
 function readBody(req: IncomingMessage, limit: number): Promise<string> {
@@ -100,8 +115,19 @@ function readBody(req: IncomingMessage, limit: number): Promise<string> {
     const fail = (err: Error) => {
       if (settled) return;
       settled = true;
+      // Stop pulling data so an oversized upload can't keep buffering, while
+      // leaving the socket intact so the error handler can still send a
+      // response. pause() applies backpressure to the client.
+      req.pause();
       reject(err);
     };
+    // Reject early when the declared length already exceeds the limit, before
+    // reading any of the body off the wire.
+    const declared = Number(req.headers["content-length"]);
+    if (Number.isFinite(declared) && declared > limit) {
+      fail(new BodyParseError("Request body too large", 413));
+      return;
+    }
     req.on("data", (chunk: Buffer) => {
       if (settled) return;
       size += chunk.length;

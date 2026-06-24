@@ -150,3 +150,55 @@ test("stacked parsers each handle their own Content-Type", async () => {
     assert.deepEqual(await asForm.json(), { from: "form" });
   });
 });
+
+test("text()/urlencoded() leave req.body undefined for an empty body", async () => {
+  const router = new Router();
+  router.use(text());
+  router.use(urlencoded());
+  router.post("/", (req, res) => res.json({ hasBody: req.body !== undefined }));
+  await withServer(router, async (base) => {
+    const asText = await fetch(base + "/", {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+    });
+    assert.deepEqual(await asText.json(), { hasBody: false });
+
+    const asForm = await fetch(base + "/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    assert.deepEqual(await asForm.json(), { hasBody: false });
+  });
+});
+
+test("json() matches the media type strictly, not as a loose prefix", async () => {
+  const router = new Router();
+  router.use(json());
+  router.post("/", (req, res) => res.json({ hasBody: req.body !== undefined }));
+  await withServer(router, async (base) => {
+    // application/json-patch+json shares the "application/json" prefix but is a
+    // different media type and must not be parsed by json().
+    const res = await fetch(base + "/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json-patch+json" },
+      body: JSON.stringify([{ op: "add", path: "/a", value: 1 }]),
+    });
+    assert.deepEqual(await res.json(), { hasBody: false });
+  });
+});
+
+test("urlencoded() body has a null prototype (no __proto__ pollution)", async () => {
+  const router = new Router();
+  router.use(urlencoded());
+  router.post("/", (req, res) =>
+    res.json({ polluted: ({} as Record<string, unknown>).polluted ?? null }),
+  );
+  await withServer(router, async (base) => {
+    await fetch(base + "/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "__proto__[polluted]=yes&a=1",
+    });
+    assert.deepEqual(({} as Record<string, unknown>).polluted ?? null, null);
+  });
+});
