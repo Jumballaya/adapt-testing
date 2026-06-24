@@ -1,5 +1,5 @@
 import { App } from "./app/index.ts";
-import { Router, json, BodyParseError } from "./router/index.ts";
+import { Router, json, cookieParser, BodyParseError } from "./router/index.ts";
 
 async function main() {
   const app = new App();
@@ -10,12 +10,21 @@ async function main() {
     next();
   });
 
-  // Parse JSON request bodies into req.body
+  // Parse JSON request bodies into req.body and cookies into req.cookies
   app.use(json());
+  app.use(cookieParser());
 
   // Echo the parsed JSON body back to the client
   app.post("/echo", (req, res) => {
     res.json({ received: req.body });
+  });
+
+  // Track visits with a cookie
+  app.get("/visits", (req, res) => {
+    const previous = Number(req.cookies?.visits);
+    const count = (Number.isFinite(previous) ? previous : 0) + 1;
+    res.cookie("visits", String(count), { httpOnly: true, sameSite: "lax" });
+    res.json({ visits: count });
   });
 
   app.get("/", (_req, res) => {

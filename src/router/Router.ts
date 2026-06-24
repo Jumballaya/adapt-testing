@@ -37,6 +37,8 @@ export interface RouterRequest extends IncomingMessage {
   originalUrl: string;
   /** Parsed request body, populated by body-parser middleware (see body.ts). */
   body?: unknown;
+  /** Parsed request cookies, populated by cookieParser() (see cookies.ts). */
+  cookies?: Record<string, string>;
 }
 
 interface Layer {
@@ -221,6 +223,12 @@ export class Router {
 
   private defaultError(err: unknown, res: RouterResponse): void {
     if (res.writableEnded) return;
+    // If headers are already on the wire we can't turn this into a 500;
+    // setHeader would throw ERR_HTTP_HEADERS_SENT. Abort the socket instead.
+    if (res.headersSent) {
+      res.destroy(err instanceof Error ? err : new Error(String(err)));
+      return;
+    }
     res.statusCode = 500;
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     const message = err instanceof Error ? (err.stack ?? err.message) : String(err);
