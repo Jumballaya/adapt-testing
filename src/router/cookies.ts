@@ -66,7 +66,7 @@ export function serializeCookie(
   // Express; callers can still pass an explicit narrower path.
   str += `; Path=${options.path ?? "/"}`;
   if (options.maxAge !== undefined) {
-    str += `; Max-Age=${options.maxAge}`;
+    str += `; Max-Age=${Math.floor(options.maxAge)}`;
   }
   if (options.expires) str += `; Expires=${options.expires.toUTCString()}`;
   if (options.domain) str += `; Domain=${options.domain}`;
