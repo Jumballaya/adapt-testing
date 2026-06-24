@@ -43,9 +43,9 @@ export function rateLimit(options: RateLimitOptions = {}): RouteHandler {
     entry.count++;
 
     res.setHeader("X-RateLimit-Limit", String(max));
-    res.setHeader("X-RateLimit-Remaining", String(max - entry.count));
+    res.setHeader("X-RateLimit-Remaining", String(Math.max(0, max - entry.count)));
 
-    if (entry.count > max + 1) {
+    if (entry.count > max) {
       res.statusCode = 429;
       res.setHeader("Retry-After", String(Math.ceil((entry.resetAt - now) / 1000)));
       res.end(message);
