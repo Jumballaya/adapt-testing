@@ -131,7 +131,7 @@ function readBody(req: IncomingMessage, limit: number): Promise<string> {
     req.on("data", (chunk: Buffer) => {
       if (settled) return;
       size += chunk.length;
-      if (size > limit) {
+      if (chunk.length > limit) {
         fail(new BodyParseError("Request body too large", 413));
         return;
       }

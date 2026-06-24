@@ -1,5 +1,12 @@
 import { App } from "./app/index.ts";
-import { Router, json, cookieParser, BodyParseError } from "./router/index.ts";
+import {
+  Router,
+  json,
+  cookieParser,
+  cors,
+  serveStatic,
+  BodyParseError,
+} from "./router/index.ts";
 
 async function main() {
   const app = new App();
@@ -10,9 +17,15 @@ async function main() {
     next();
   });
 
+  // Allow cross-origin browser requests
+  app.use(cors());
+
   // Parse JSON request bodies into req.body and cookies into req.cookies
   app.use(json());
   app.use(cookieParser());
+
+  // Serve static assets from ./public (falls through to routes on a miss)
+  app.use(serveStatic("public"));
 
   // Echo the parsed JSON body back to the client
   app.post("/echo", (req, res) => {
