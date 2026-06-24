@@ -35,6 +35,8 @@ export interface RouterRequest extends IncomingMessage {
   path: string;
   baseUrl: string;
   originalUrl: string;
+  /** Parsed request body, populated by body-parser middleware (see body.ts). */
+  body?: unknown;
 }
 
 interface Layer {
