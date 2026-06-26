@@ -21,7 +21,7 @@ async function main() {
   app.use(cors());
 
   // Parse JSON request bodies into req.body and cookies into req.cookies
-  app.use(json());
+  // app.use(json());
   app.use(cookieParser());
 
   // Serve static assets from ./public (falls through to routes on a miss)
