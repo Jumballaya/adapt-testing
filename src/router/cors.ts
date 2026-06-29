@@ -70,7 +70,6 @@ export function cors(options: CorsOptions = {}): RouteHandler {
         res.setHeader("Access-Control-Max-Age", String(options.maxAge));
       }
     }
-    res.statusCode = 204;
     res.end();
   };
 }
