@@ -47,7 +47,6 @@ export class App {
 
   // ---- HTTP method shortcuts ----
 
-  get(path: string, ...h: RouteHandler[]): this { this.router.get(path, ...h); return this; }
   post(path: string, ...h: RouteHandler[]): this { this.router.post(path, ...h); return this; }
   put(path: string, ...h: RouteHandler[]): this { this.router.put(path, ...h); return this; }
   patch(path: string, ...h: RouteHandler[]): this { this.router.patch(path, ...h); return this; }
