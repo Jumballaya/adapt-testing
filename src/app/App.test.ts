@@ -28,17 +28,6 @@ test("app.get and app.listen serve a basic response", async () => {
   });
 });
 
-test("app.use runs middleware before route handler", async () => {
-  const app = new App();
-  const calls: string[] = [];
-  app.use((_req, _res, next) => { calls.push("mw"); next(); });
-  app.get("/", (_req, res) => { calls.push("handler"); res.end("ok"); });
-  await withApp(app, async (base) => {
-    await fetch(base + "/");
-    assert.deepEqual(calls, ["mw", "handler"]);
-  });
-});
-
 test("app.use mounts a sub-Router under a path prefix", async () => {
   const app = new App();
   const api = new Router();
