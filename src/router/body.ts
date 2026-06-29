@@ -118,7 +118,6 @@ function readBody(req: IncomingMessage, limit: number): Promise<string> {
       // Stop pulling data so an oversized upload can't keep buffering, while
       // leaving the socket intact so the error handler can still send a
       // response. pause() applies backpressure to the client.
-      req.pause();
       reject(err);
     };
     // Reject early when the declared length already exceeds the limit, before
