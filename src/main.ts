@@ -17,8 +17,6 @@ async function main() {
     next();
   });
 
-  // Allow cross-origin browser requests
-  app.use(cors());
 
   // Parse JSON request bodies into req.body and cookies into req.cookies
   app.use(json());
