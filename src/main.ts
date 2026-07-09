@@ -11,11 +11,6 @@ import {
 async function main() {
   const app = new App();
 
-  // Request logger middleware
-  app.use((req, _res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    next();
-  });
 
   // Allow cross-origin browser requests
   app.use(cors());
