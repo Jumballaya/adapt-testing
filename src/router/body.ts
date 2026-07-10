@@ -59,9 +59,7 @@ export function urlencoded(options: BodyOptions = {}): RouteHandler {
   });
 }
 
-function makeParser(
-  type: string,
-  limit: number = DEFAULT_LIMIT,
+ULT_LIMIT,
   parse: (raw: string) => unknown,
 ): RouteHandler {
   const wanted = type.toLowerCase();
