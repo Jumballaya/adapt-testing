@@ -8,8 +8,6 @@ import {
   BodyParseError,
 } from "./router/index.ts";
 
-async function main() {
-  const app = new App();
 
   // Request logger middleware
   app.use((req, _res, next) => {
