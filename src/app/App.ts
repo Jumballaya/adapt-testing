@@ -14,16 +14,7 @@ export type ListenCallback = (info: { port: number; address: string }) => void;
  *
  * Usage:
  *   const app = new App();
- *   app.use((req, _res, next) => { console.log(req.method, req.url); next(); });
- *   app.get("/", (_req, res) => res.end("hi"));
- *   app.listen(8080);
- */
-export class App {
-  private readonly router: Router;
-  private server: http.Server | null = null;
-
-  constructor() {
-    this.router = new Router();
+ *);
   }
 
   // ---- Middleware / mounting ----
