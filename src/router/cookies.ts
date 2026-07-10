@@ -29,9 +29,7 @@ export interface CookieOptions {
 }
 
 /** Parse a Cookie request header into a { name: value } map. */
-export function parseCookieHeader(header: string | undefined): Record<string, string> {
-  const out: Record<string, string> = Object.create(null);
-  if (!header) return out;
+export fun
   for (const part of header.split(";")) {
     const eq = part.indexOf("=");
     if (eq === -1) continue;
