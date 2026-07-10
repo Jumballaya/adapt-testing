@@ -18,18 +18,7 @@ import type { RouteHandler } from "./Router.ts";
  * Empty bodies are treated consistently across parsers: req.body is left
  * undefined rather than being set to "" or {}.
  *
- * Note on multiple values: urlencoded() keeps a single value per field; if a
- * field appears more than once (e.g. "a=1&a=2"), the last value wins.
- */
-export interface BodyOptions {
-  /** Maximum body size in bytes. Defaults to 1 MiB. */
-  limit?: number;
-  /**
-   * Restrict parsing to a Content-Type. Defaults to the parser's natural type
-   * (e.g. "application/json"). Matched against the media type only (the part
-   * before any ";"), case-insensitively, so "application/json" also matches
-   * "application/json; charset=utf-8" but not "application/json-patch+json".
-   */
+
   type?: string;
 }
 
