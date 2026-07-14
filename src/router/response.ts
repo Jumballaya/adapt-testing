@@ -4,28 +4,7 @@ import { stat } from "node:fs/promises";
 import { extname } from "node:path";
 import { serializeCookie, type CookieOptions } from "./cookies.ts";
 
-/**
- * Express-style response helpers layered onto Node's ServerResponse.
- *
- * These are chainable conveniences so handlers can write
- *
- *   res.status(201).json({ id });
- *
- * instead of the raw writeHead / JSON.stringify dance. The methods are added
- * once per response by enhanceResponse() before any handler runs, so they are
- * always present inside route handlers and middleware.
- */
-export interface RouterResponse extends ServerResponse {
-  /** Set the HTTP status code. Chainable. */
-  status(code: number): this;
-  /** Set a single response header. Chainable. */
-  set(field: string, value: string): this;
-  /** Set the Content-Type header. Bare types get a utf-8 charset. Chainable. */
-  type(contentType: string): this;
-  /** Send a JSON body (sets Content-Type unless already set) and end. */
-  json(body: unknown): void;
-  /** Send a string/Buffer/object body, inferring Content-Type, and end. */
-  send(body: string | Buffer | object | null | undefined): void;
+y: string | Buffer | object | null | undefined): void;
   /** Redirect to a URL. Defaults to 302; pass a status to override. */
   redirect(url: string): void;
   redirect(status: number, url: string): void;
