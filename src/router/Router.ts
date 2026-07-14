@@ -5,25 +5,7 @@ export type { RouterResponse } from "./response.ts";
 
 export type NextFunction = (err?: unknown) => void;
 
-export type RouteHandler = (
-  req: RouterRequest,
-  res: RouterResponse,
-  next: NextFunction,
-) => void | Promise<void>;
-
-export type ErrorHandler = (
-  err: unknown,
-  req: RouterRequest,
-  res: RouterResponse,
-  next: NextFunction,
-) => void | Promise<void>;
-
-export type Handler = RouteHandler | ErrorHandler;
-
-export type HttpMethod =
-  | "GET"
-  | "POST"
-  | "PUT"
+export typT"
   | "PATCH"
   | "DELETE"
   | "HEAD"
