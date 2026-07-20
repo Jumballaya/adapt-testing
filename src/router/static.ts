@@ -2,30 +2,7 @@ import { stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { RouteHandler } from "./Router.ts";
 
-/**
- * Serve files from a directory, in the style of express.static().
- *
- *   app.use(serveStatic("public"));            // mounted at the root
- *   app.use("/assets", assetsRouter);          // or under a prefix via a Router
- *
- * The request path (relative to the mount point) is resolved against root and
- * streamed via res.sendFile(). Requests that escape root, miss, or use a
- * non-GET/HEAD method fall through to the next handler so ordinary routing and
- * 404 handling still apply — unless fallthrough is disabled.
- */
-export interface StaticOptions {
-  /** File served for a directory request. Pass false to disable. Default "index.html". */
-  index?: string | false;
-  /**
-   * When true (default) a miss calls next(); when false it ends the response
-   * with 404 so no later handler can claim the path.
-   */
-  fallthrough?: boolean;
-}
-
-export function serveStatic(
-  root: string,
-  options: StaticOptions = {},
+: StaticOptions = {},
 ): RouteHandler {
   const rootDir = resolve(root);
   const index = options.index === undefined ? "index.html" : options.index;
