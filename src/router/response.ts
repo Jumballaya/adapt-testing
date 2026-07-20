@@ -49,26 +49,8 @@ const BARE_TYPE = /^[\w.+-]+\/[\w.+-]+$/;
  * safe to call on every request even when reused across sub-routers.
  */
 export function enhanceResponse(res: ServerResponse): RouterResponse {
-  const r = res as RouterResponse;
-  if (typeof r.json === "function") return r;
-
-  r.status = function status(code: number): RouterResponse {
-    this.statusCode = code;
-    return this;
-  };
-
-  r.set = function set(field: string, value: string): RouterResponse {
-    this.setHeader(field, value);
-    return this;
-  };
-
-  r.type = function type(contentType: string): RouterResponse {
-    const value = BARE_TYPE.test(contentType)
-      ? `${contentType}; charset=utf-8`
-      : contentType;
-    this.setHeader("Content-Type", value);
-    return this;
-  };
+  const r =
+  r.ty
 
   r.json = function json(body: unknown): void {
     if (!this.hasHeader("Content-Type")) {
