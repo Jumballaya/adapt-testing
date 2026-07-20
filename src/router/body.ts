@@ -1,29 +1,5 @@
 import type { IncomingMessage } from "http";
-import type { RouteHandler } from "./Router.ts";
-
-/**
- * Built-in body-parsing middleware, in the style of express.json() /
- * express.urlencoded(). Each factory returns a middleware that reads the
- * request stream once, parses it according to the Content-Type, and assigns
- * the result to req.body before calling next().
- *
- *   app.use(json());
- *   app.post("/users", (req, res) => res.json(req.body));
- *
- * Requests whose Content-Type does not match a parser are passed through
- * untouched (req.body stays undefined), so several parsers can be stacked.
- * Malformed bodies and bodies over the size limit are forwarded to the error
- * chain via next(err) rather than throwing.
- *
- * Empty bodies are treated consistently across parsers: req.body is left
- * undefined rather than being set to "" or {}.
- *
- * Note on multiple values: urlencoded() keeps a single value per field; if a
- * field appears more than once (e.g. "a=1&a=2"), the last value wins.
- */
-export interface BodyOptions {
-  /** Maximum body size in bytes. Defaults to 1 MiB. */
-  limit?: number;
+impt?: number;
   /**
    * Restrict parsing to a Content-Type. Defaults to the parser's natural type
    * (e.g. "application/json"). Matched against the media type only (the part
