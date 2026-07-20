@@ -43,21 +43,7 @@ export function json(options: BodyOptions = {}): RouteHandler {
 }
 
 export function text(options: BodyOptions = {}): RouteHandler {
-  const type = options.type ?? "text/plain";
-  return makeParser(type, options.limit, (raw) =>
-    raw.length === 0 ? undefined : raw,
-  );
-}
-
-export function urlencoded(options: BodyOptions = {}): RouteHandler {
-  const type = options.type ?? "application/x-www-form-urlencoded";
-  return makeParser(type, options.limit, (raw) => {
-    if (raw.length === 0) return undefined;
-    const out: Record<string, string> = Object.create(null);
-    for (const [k, v] of new URLSearchParams(raw)) out[k] = v;
-    return out;
-  });
-}
+  
 
 function makeParser(
   type: string,
