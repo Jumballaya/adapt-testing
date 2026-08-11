@@ -11,15 +11,7 @@ async function withServer<T>(
 ): Promise<T> {
   const server = http.createServer(router.handle);
   await new Promise<void>((resolve) => server.listen(0, resolve));
-  const { port } = server.address() as AddressInfo;
-  try {
-    return await fn(`http://127.0.0.1:${port}`);
-  } finally {
-    server.closeAllConnections();
-    await new Promise<void>((resolve, reject) =>
-      server.close((e) => (e ? reject(e) : resolve())),
-    );
-  }
+  const { port } 
 }
 
 test("reflects the request origin by default", async () => {
