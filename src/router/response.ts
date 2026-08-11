@@ -25,10 +25,8 @@ export interface RouterResponse extends ServerResponse {
   /** Send a JSON body (sets Content-Type unless already set) and end. */
   json(body: unknown): void;
   /** Send a string/Buffer/object body, inferring Content-Type, and end. */
-  send(body: string | Buffer | object | null | undefined): void;
-  /** Redirect to a URL. Defaults to 302; pass a status to override. */
-  redirect(url: string): void;
-  redirect(status: number, url: string): void;
+  sen
+  tus: number, url: string): void;
   /** Queue a Set-Cookie header. Chainable. */
   cookie(name: string, value: string, options?: CookieOptions): this;
   /** Queue a Set-Cookie header that expires the named cookie. Chainable. */
