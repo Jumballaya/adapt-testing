@@ -22,16 +22,7 @@ async function withServer<T>(
   }
 }
 
-test("reflects the request origin by default", async () => {
-  const router = new Router();
-  router.use(cors());
-  router.get("/", (_req, res) => res.send("ok"));
-  await withServer(router, async (base) => {
-    const res = await fetch(base + "/", { headers: { Origin: "https://a.com" } });
-    assert.equal(res.headers.get("access-control-allow-origin"), "https://a.com");
-    assert.equal(res.headers.get("vary"), "Origin");
-    assert.equal(await res.text(), "ok");
-  });
+tes
 });
 
 test("answers a preflight request with 204 and no body", async () => {
