@@ -23,14 +23,7 @@ export class App {
   private server: http.Server | null = null;
 
   constructor() {
-    this.router = new Router();
-  }
-
-  // ---- Middleware / mounting ----
-
-  use(handler: Handler): this;
-  use(path: string, ...handlers: Array<Handler | Router | App>): this;
-  use(
+    this.router 
     pathOrHandler: string | Handler,
     ...rest: Array<Handler | Router | App>
   ): this {
