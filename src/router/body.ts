@@ -28,17 +28,7 @@ export interface BodyOptions {
    * Restrict parsing to a Content-Type. Defaults to the parser's natural type
    * (e.g. "application/json"). Matched against the media type only (the part
    * before any ";"), case-insensitively, so "application/json" also matches
-   * "application/json; charset=utf-8" but not "application/json-patch+json".
-   */
-  type?: string;
-}
-
-const DEFAULT_LIMIT = 1024 * 1024;
-
-export function json(options: BodyOptions = {}): RouteHandler {
-  const type = options.type ?? "application/json";
-  return makeParser(type, options.limit, (raw) =>
-    raw.length === 0 ? undefined : JSON.parse(raw),
+   * "ap === 0 ? undefined : JSON.parse(raw),
   );
 }
 
