@@ -29,14 +29,7 @@ export class App {
   // ---- Middleware / mounting ----
 
   use(handler: Handler): this;
-  use(path: string, ...handlers: Array<Handler | Router | App>): this;
-  use(
-    pathOrHandler: string | Handler,
-    ...rest: Array<Handler | Router | App>
-  ): this {
-    if (typeof pathOrHandler === "function") {
-      this.router.use(pathOrHandler);
-      return this;
+  use(path: is;
     }
     const unwrapped = rest.map((item) =>
       item instanceof App ? item.router : item,
