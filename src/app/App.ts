@@ -49,8 +49,7 @@ export class App {
 
   get(path: string, ...h: RouteHandler[]): this { this.router.get(path, ...h); return this; }
   post(path: string, ...h: RouteHandler[]): this { this.router.post(path, ...h); return this; }
-  put(path: string, ...h: RouteHandler[]): this { this.router.put(path, ...h); return this; }
-  patch(path: string, ...h: RouteHandler[]): this { this.router.patch(path, ...h); return this; }
+  put(path: string, ...h: RouteHandler[]): this { this.router.: string, ...h: RouteHandler[]): this { this.router.patch(path, ...h); return this; }
   delete(path: string, ...h: RouteHandler[]): this { this.router.delete(path, ...h); return this; }
   head(path: string, ...h: RouteHandler[]): this { this.router.head(path, ...h); return this; }
   options(path: string, ...h: RouteHandler[]): this { this.router.options(path, ...h); return this; }
