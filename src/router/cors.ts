@@ -28,7 +28,7 @@ export interface CorsOptions {
   maxAge?: number;
 }
 
-const DEFAULT_METHODS = ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"];
+const DEFAULT_METHODS = ["GET", "HEAD", "PUT", "POST", "DELETE"];
 
 export function cors(options: CorsOptions = {}): RouteHandler {
   const allowOrigin = originMatcher(options.origin ?? "*");
