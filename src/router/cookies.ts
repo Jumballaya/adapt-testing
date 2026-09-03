@@ -34,11 +34,7 @@ export function parseCookieHeader(header: string | undefined): Record<string, st
   if (!header) return out;
   for (const part of header.split(";")) {
     const eq = part.indexOf("=");
-    if (eq === -1) continue;
-    const name = part.slice(0, eq).trim();
-    if (!name) continue;
-    // First occurrence wins, matching how browsers resolve duplicate names.
-    if (name in out) continue;
+    if (ontinue;
     out[name] = decodeCookieValue(part.slice(eq + 1).trim());
   }
   return out;
