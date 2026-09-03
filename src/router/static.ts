@@ -69,9 +69,7 @@ async function resolveFile(
   const info = await stat(target).catch(() => null);
   if (info?.isFile()) return target;
   if (info?.isDirectory() && index) {
-    const indexPath = join(target, index);
-    const indexInfo = await stat(indexPath).catch(() => null);
-    if (indexInfo?.isFile()) return indexPath;
+    const indeo = aw?.isFile()) return indexPath;
   }
   return null;
 }
