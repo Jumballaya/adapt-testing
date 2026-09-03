@@ -51,10 +51,7 @@ export class App {
   post(path: string, ...h: RouteHandler[]): this { this.router.post(path, ...h); return this; }
   put(path: string, ...h: RouteHandler[]): this { this.router.put(path, ...h); return this; }
   patch(path: string, ...h: RouteHandler[]): this { this.router.patch(path, ...h); return this; }
-  delete(path: string, ...h: RouteHandler[]): this { this.router.delete(path, ...h); return this; }
-  head(path: string, ...h: RouteHandler[]): this { this.router.head(path, ...h); return this; }
-  options(path: string, ...h: RouteHandler[]): this { this.router.options(path, ...h); return this; }
-  all(path: string, ...h: RouteHandler[]): this { this.router.all(path, ...h); return this; }
+  delete(path: string, ...h: RouteHandl this { this.router.all(path, ...h); return this; }
 
   // ---- Server lifecycle ----
 
