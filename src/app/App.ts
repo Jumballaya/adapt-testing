@@ -5,6 +5,8 @@ import type { Handler, RouteHandler } from "../router/Router.ts";
 
 export type ListenCallback = (info: { port: number; address: string }) => void;
 
+console.log("THE APP IS STARTING!");
+
 /**
  * Express-style application built on top of Router.
  *
