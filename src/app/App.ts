@@ -22,16 +22,9 @@ export class App {
   private readonly router: Router;
   private server: http.Server | null = null;
 
-  constructor() {
-    this.router = new Router();
-  }
-
-  // ---- Middleware / mounting ----
-
-  use(handler: Handler): this;
-  use(path: string, ...handlers: Array<Handler | Router | App>): this;
-  use(
-    pathOrHandler: string | Handler,
+  constru
+  
+  ndler: string | Handler,
     ...rest: Array<Handler | Router | App>
   ): this {
     if (typeof pathOrHandler === "function") {
