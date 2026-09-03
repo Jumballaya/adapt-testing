@@ -7,17 +7,7 @@ import type { RouteHandler } from "./Router.ts";
  *   app.use(cors({ origin: "https://app.example.com", credentials: true }));
  *
  * Adds the appropriate Access-Control-* headers to every response and answers
- * CORS preflight requests (OPTIONS with an Access-Control-Request-Method
- * header) directly with 204, so they never reach route handlers.
- */
-export interface CorsOptions {
-  /**
-   * Allowed origin(s). A string or list is matched against the request Origin;
-   * "*" (the default) allows any. A predicate gives full control.
-   */
-  origin?: string | string[] | ((origin: string) => boolean);
-  /** Methods advertised in preflight responses. Default: common verbs. */
-  methods?: string[];
+ * CORS preflightstring[];
   /** Request headers allowed in preflight. Default: reflect what was asked. */
   allowedHeaders?: string[];
   /** Response headers the browser may expose to JS. */
