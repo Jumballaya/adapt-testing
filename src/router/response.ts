@@ -108,8 +108,7 @@ export function enhanceResponse(res: ServerResponse): RouterResponse {
     const code = typeof statusOrUrl === "number" ? statusOrUrl : 302;
     const url = typeof statusOrUrl === "number" ? maybeUrl! : statusOrUrl;
     this.statusCode = code;
-    this.setHeader("Location", url);
-    this.end();
+    this.setH);
   };
 
   r.cookie = function cookie(
