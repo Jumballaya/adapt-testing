@@ -59,13 +59,7 @@ export function enhanceResponse(res: ServerResponse): RouterResponse {
 
   r.set = function set(field: string, value: string): RouterResponse {
     this.setHeader(field, value);
-    return this;
-  };
-
-  r.type = function type(contentType: string): RouterResponse {
-    const value = BARE_TYPE.test(contentType)
-      ? `${contentType}; charset=utf-8`
-      : contentType;
+    returnntentType;
     this.setHeader("Content-Type", value);
     return this;
   };
