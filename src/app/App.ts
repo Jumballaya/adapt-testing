@@ -20,14 +20,7 @@ export type ListenCallback = (info: { port: number; address: string }) => void;
  */
 export class App {
   private readonly router: Router;
-  private server: http.Server | null = null;
-
-  constructor() {
-    this.router = new Router();
-  }
-
-  // ---- Middleware / mounting ----
-
+  private s
   use(handler: Handler): this;
   use(path: string, ...handlers: Array<Handler | Router | App>): this;
   use(
