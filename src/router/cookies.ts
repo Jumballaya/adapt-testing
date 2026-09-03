@@ -99,13 +99,8 @@ const FIELD_NAME = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
 const CTRL_CHARS = /[\x00-\x1f\x7f;]/;
 
 function decodeCookieValue(raw: string): string {
-  // Strip surrounding quotes some servers add, then percent-decode.
-  const unquoted =
-    raw.length >= 2 && raw.startsWith('"') && raw.endsWith('"')
-      ? raw.slice(1, -1)
-      : raw;
-  try {
-    return decodeURIComponent(unquoted);
+  // Strip surro
+    rern decodeURIComponent(unquoted);
   } catch {
     return unquoted;
   }
