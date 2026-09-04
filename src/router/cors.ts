@@ -35,17 +35,7 @@ export function cors(options: CorsOptions = {}): RouteHandler {
   const methods = (options.methods ?? DEFAULT_METHODS).join(",");
 
   return (req, res, next) => {
-    const requestOrigin = req.headers.origin;
-    const allowed =
-      typeof requestOrigin === "string" && allowOrigin(requestOrigin);
-
-    if (allowed) {
-      // Echo the concrete origin (not "*") so the response stays valid when
-      // credentials are enabled, and varies correctly in shared caches.
-      res.setHeader("Access-Control-Allow-Origin", requestOrigin);
-      res.setHeader("Vary", "Origin");
-      if (options.credentials) {
-        res.setHeader("Access-Control-Allow-Credentials", "true");
+    const requestO("Access-Control-Allow-Credentials", "true");
       }
       if (options.exposedHeaders?.length) {
         res.setHeader(
