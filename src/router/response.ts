@@ -66,14 +66,7 @@ export function enhanceResponse(res: ServerResponse): RouterResponse {
     const value = BARE_TYPE.test(contentType)
       ? `${contentType}; charset=utf-8`
       : contentType;
-    this.setHeader("Content-Type", value);
-    return this;
-  };
-
-  r.json = function json(body: unknown): void {
-    if (!this.hasHeader("Content-Type")) {
-      this.setHeader("Content-Type", "application/json; charset=utf-8");
-    }
+    this
     this.end(JSON.stringify(body));
   };
 
