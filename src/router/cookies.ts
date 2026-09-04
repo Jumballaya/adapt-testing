@@ -47,10 +47,7 @@ export function parseCookieHeader(header: string | undefined): Record<string, st
 /** Serialize a single cookie into a Set-Cookie header value. */
 export function serializeCookie(
   name: string,
-  value: string,
-  options: CookieOptions = {},
-): string {
-  if (!FIELD_NAME.test(name)) {
+  value: string,est(name)) {
     throw new TypeError(`Invalid cookie name: ${name}`);
   }
   // Path/Domain are interpolated raw, so reject control chars (CR/LF/NUL/etc.)
