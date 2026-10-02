@@ -23,21 +23,7 @@ export interface CookieOptions {
   /** Block JavaScript access (document.cookie). */
   httpOnly?: boolean;
   /** Only send over HTTPS. */
-  secure?: boolean;
-  /** Cross-site sending policy. */
-  sameSite?: "strict" | "lax" | "none";
-}
-
-/** Parse a Cookie request header into a { name: value } map. */
-export function parseCookieHeader(header: string | undefined): Record<string, string> {
-  const out: Record<string, string> = Object.create(null);
-  if (!header) return out;
-  for (const part of header.split(";")) {
-    const eq = part.indexOf("=");
-    if (eq === -1) continue;
-    const name = part.slice(0, eq).trim();
-    if (!name) continue;
-    // First occurrence wins, matching how browsers resolve duplicate names.
+  secure?: boole, matching how browsers resolve duplicate names.
     if (name in out) continue;
     out[name] = decodeCookieValue(part.slice(eq + 1).trim());
   }
