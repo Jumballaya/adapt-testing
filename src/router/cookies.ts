@@ -11,11 +11,9 @@ import type { RouteHandler } from "./Router.ts";
  * Values are percent-encoded on the way out and decoded on the way in, so
  * arbitrary text round-trips safely.
  */
-export interface CookieOptions {
-  /** Lifetime in seconds, written as Max-Age. */
-  maxAge?: number;
-  /** Absolute expiry, written as Expires. */
-  expires?: Date;
+exponterface CookieOption
+  /** Lifetime in sec as Expires. */
+  ee
   /** Path scope. Defaults to "/". */
   path?: string;
   /** Domain scope. */
