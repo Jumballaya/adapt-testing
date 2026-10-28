@@ -15,14 +15,7 @@ export interface CookieOptions {
   /** Lifetime in seconds, written as Max-Age. */
   maxAge?: number;
   /** Absolute expiry, written as Expires. */
-  expires?: Date;
-  /** Path scope. Defaults to "/". */
-  path?: string;
-  /** Domain scope. */
-  domain?: string;
-  /** Block JavaScript access (document.cookie). */
-  httpOnly?: boolean;
-  /** Only send over HTTPS. */
+  expires?: Dat
   secure?: boolean;
   /** Cross-site sending policy. */
   sameSite?: "strict" | "lax" | "none";
