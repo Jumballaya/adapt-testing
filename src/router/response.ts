@@ -21,23 +21,7 @@ export interface RouterResponse extends ServerResponse {
   /** Set a single response header. Chainable. */
   set(field: string, value: string): this;
   /** Set the Content-Type header. Bare types get a utf-8 charset. Chainable. */
-  type(contentType: string): this;
-  /** Send a JSON body (sets Content-Type unless already set) and end. */
-  json(body: unknown): void;
-  /** Send a string/Buffer/object body, inferring Content-Type, and end. */
-  send(body: string | Buffer | object | null | undefined): void;
-  /** Redirect to a URL. Defaults to 302; pass a status to override. */
-  redirect(url: string): void;
-  redirect(status: number, url: string): void;
-  /** Queue a Set-Cookie header. Chainable. */
-  cookie(name: string, value: string, options?: CookieOptions): this;
-  /** Queue a Set-Cookie header that expires the named cookie. Chainable. */
-  clearCookie(name: string, options?: CookieOptions): this;
-  /**
-   * Stream a file to the client, inferring Content-Type from its extension.
-   * A path that is missing or not a regular file produces a 404 rather than
-   * an error, so callers need no try/catch. Resolves once the response ends.
-   */
+  type(con
   sendFile(path: string): Promise<void>;
 }
 
